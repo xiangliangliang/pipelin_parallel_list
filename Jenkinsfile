@@ -42,6 +42,10 @@ pipeline {
 								branches["${pro}"] = { 
 									//node ('master'){
 										println("${pro.split('@')[0]}：${pro.split('@')[1]} ")
+										sleep 5
+										def d=new Date().toString() 
+										println(d)
+
 									//}
 								}
 						  }
