@@ -37,7 +37,8 @@ pipeline {
 					def select_pro = project_name.split(',') 
 					def branches = [:]
 
-					for (pro in select_pro) {
+					for (x in select_pro) {
+						def pro = x //特别注意，这里必须再转换一下，it is a must transform, otherwise the result will be ser4@4 ser4@4 ser4@4 ser4@4
 						   stage ("${pro}"){ 
 								branches["${pro}"] = { 
 									//node ('master'){
