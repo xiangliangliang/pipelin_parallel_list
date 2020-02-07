@@ -5,9 +5,10 @@ pipeline {
 			}
 
 	options { 
-		//disableConcurrentBuilds() 
+		disableConcurrentBuilds() 
 		buildDiscarder(logRotator(numToKeepStr: '10'))
-		timestamps()	
+		timestamps()
+		parallelsAlwaysFailFast()
 		}
 		
 	parameters {
@@ -16,6 +17,60 @@ pipeline {
 	}
 	
 	stages {
+
+		//stage('matrix'){
+			//matrix {
+				//axes {
+					//axis {
+						//name 'PLATFORM'
+						//values 'master'
+					//}
+					//axis {
+						//name 'BROWSER'
+						//values 'master'
+					//}
+				//}
+				//stages {
+					//stage('build-and-test') {
+						//steps{println("hello world")}
+					//}
+				//}
+			//}
+		 //}//
+		 
+		 stage('checkout') {
+		 steps {
+			 script{				
+					 checkout([$class: 'GitSCM', 
+						 branches: [[name: '*/master']], 
+						 doGenerateSubmoduleConfigurations: false, 
+						 //extensions: [[$class: 'PerBuildTag']], 
+						 submoduleCfg: [], 
+						 userRemoteConfigs: [[credentialsId: 'git_ssh', 
+						 url: 'git@github.com:xiangliangliang/pipelin_parallel_list.git']]])
+					 }
+
+			 }
+			}//
+
+		stage('add tag') {
+			steps {
+				script{	
+						def d=new Date().toString().split()[3].replaceAll(":","_")
+						tag = "${d}_tag"
+						git credentialsId: 'github_test', url:"git@github.com:xiangliangliang/pipelin_parallel_list.git"
+						bat """	
+							cd D:/git_pipeline_parallel
+							git config user.email "123@qq.com"
+							git config user.name "123@qq.com"
+							git tag -a -m "${tag}" ${tag}
+							git push origin --tags
+						"""
+
+						}
+
+				}
+			}//
 
 		stage('serial') {
 				steps {
@@ -41,13 +96,13 @@ pipeline {
 						def pro = x //特别注意，这里必须再转换一下，it is a must transform, otherwise the result will be ser4@4 ser4@4 ser4@4 ser4@4
 						   stage ("${pro}"){ 
 								branches["${pro}"] = { 
-									//node ('master'){
+									node ('master'){
 										println("${pro.split('@')[0]}：${pro.split('@')[1]} ")
 										sleep 5
 										def d=new Date().toString() 
 										println(d)
 
-									//}
+									}
 								}
 						  }
 					}
@@ -55,5 +110,6 @@ pipeline {
 				}
 			}
 		}//
+		
 	}
 }
